@@ -24,10 +24,7 @@
 00_1_SOURCE_DIR:STATIC=C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/00_1
 
 //No help, variable specified on the command line.
-CCACHE_ENABLE:UNINITIALIZED=1
-
-//Path to a program.
-CCACHE_FOUND:FILEPATH=C:/Users/juni0/.espressif/tools/ccache/4.8/ccache-4.8-windows-x86_64/ccache.exe
+CCACHE_ENABLE:UNINITIALIZED=0
 
 //Path to a program.
 CMAKE_ADDR2LINE:FILEPATH=C:/Users/juni0/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20230928/xtensa-esp-elf/bin/xtensa-esp32-elf-addr2line.exe
