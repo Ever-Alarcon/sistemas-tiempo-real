@@ -1,35 +1,13 @@
-| Supported Targets | ESP32 | ESP32-C2 | ESP32-C3 | ESP32-C6 | ESP32-H2 | ESP32-P4 | ESP32-S2 | ESP32-S3 |
-| ----------------- | ----- | -------- | -------- | -------- | -------- | -------- | -------- | -------- |
+Este programa presenta una integración de dos utilidades: el manejo de PWM (Modulación de Ancho de Pulso) y la creación de una librería propia para manejar 2 leds RGB.
 
-# _Sample project_
+## Aclaraciones sobre el Código
 
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
+> Es importante asegurarse de que todos los archivos `.c`, tanto del programa principal como de la librería, estén incluidos en el archivo `CMakelist`.
 
-This is the simplest buildable example. The example is used by command `idf.py create-project`
-that copies the project to user specified path and set it's name. For more information follow the [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project)
+En la sección inicial del programa principal se definen los pines correspondientes a cada LED. Se recomienda conectar una resistencia de protección a cada uno de ellos y conectar el terminal común a tierra.
 
 
+Para que la librería funcione correctamente, es necesario inicializar el temporizador con la función `RGB_TIMER_INIT`. la libreia esta hecha para manejar dos RGBs cada uno presenta su propia funcion de inicialización.
 
-## How to use example
-We encourage the users to use the example as a template for the new projects.
-A recommended way is to follow the instructions on a [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project).
 
-## Example folder contents
-
-The project **sample_project** contains one source file in C language [main.c](main/main.c). The file is located in folder [main](main).
-
-ESP-IDF projects are built using CMake. The project build configuration is contained in `CMakeLists.txt`
-files that provide set of directives and instructions describing the project's source files and targets
-(executable, library, or both). 
-
-Below is short explanation of remaining files in the project folder.
-
-```
-├── CMakeLists.txt
-├── main
-│   ├── CMakeLists.txt
-│   └── main.c
-└── README.md                  This is the file you are currently reading
-```
-Additionally, the sample project contains Makefile and component.mk files, used for the legacy Make based build system. 
-They are not used or needed when building with CMake and idf.py.
+La librería opera utilizando el Timer 0, con canales que van del 0 al 5. La resolución del temporizador se ha ajustado a 8 bits para controlar el ciclo de trabajo, permitiendo que los valores se asemejen a lo que se espera en el formato de imágenes. La función que se encarga de modificar el ciclo de trabajo es `RGB_CHANGE`.
