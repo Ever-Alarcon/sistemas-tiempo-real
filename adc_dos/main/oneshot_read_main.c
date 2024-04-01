@@ -1,8 +1,9 @@
 /*
  * SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
  *
- * SPDX-License-Identifier: Apache-2.0       se incluye codigo para NTC
-*/
+ * SPDX-License-Identifier: Apache-2.0				ecuación de Steinhart-Hart
+ */
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,35 +27,29 @@ static int voltage;
 static bool example_adc_calibration_init(adc_unit_t unit, adc_channel_t channel, adc_atten_t atten, adc_cali_handle_t *out_handle);
 static void example_adc_calibration_deinit(adc_cali_handle_t handle);
 
-
-
-
-
-// Definir el valor de la resistencia del NTC
-#define NTC_RESISTANCE 10000.0
-
-// Definir los valores de la resistencia de referencia y el voltaje de referencia del ADC
-#define REFERENCE_RESISTANCE 10000.0
+// Parámetros de la ecuación de Steinhart-Hart
+#define NTC_RESISTANCE 10000.0  // Resistencia nominal del NTC en Ohm
+#define REFERENCE_RESISTANCE 10000.0  // Resistencia de referencia en Ohm
 #define ADC_REFERENCE_VOLTAGE 3300.0 // mV
-
-// Definir el beta del NTC
-#define BETA 3950
-
-// Definir la temperatura ambiente de referencia
-#define AMBIENT_TEMPERATURE 25
+#define BETA 3950  // Coeficiente Beta del NTC
+#define AMBIENT_TEMPERATURE 25  // Temperatura ambiente de referencia
 
 static float adc_to_temperature(int adc_raw) {
-    float resistance_ntc = NTC_RESISTANCE * (ADC_REFERENCE_VOLTAGE / adc_raw - 1);
-    float temperature = 1 / ((1 / (AMBIENT_TEMPERATURE + 273.15)) + (1 / BETA) * log(resistance_ntc / REFERENCE_RESISTANCE));
-    temperature -= 273.15; // Convertir de Kelvin a Celsius
-    return temperature;
-    
+    // Convertir la lectura cruda del ADC a resistencia del NTC
+    float voltage = adc_raw * (ADC_REFERENCE_VOLTAGE / 4095.0); // 4095 es el valor máximo de la lectura cruda del ADC
+    float resistance_ntc = (REFERENCE_RESISTANCE * voltage) / (ADC_REFERENCE_VOLTAGE - voltage);
+
+    // Aplicar la ecuación de Steinhart-Hart para calcular la temperatura en Kelvin
+    float steinhart;
+    steinhart = NTC_RESISTANCE / resistance_ntc; // Invertir (R0/R)
+    steinhart = log(steinhart); // ln(R0/R)
+    steinhart /= BETA; // 1/B * ln(R0/R)
+    steinhart += 1.0 / (AMBIENT_TEMPERATURE + 273.15); // + (1/To)
+    steinhart = 1.0 / steinhart; // Invertir nuevamente para obtener la temperatura
+    steinhart -= 273.15; // Convertir de Kelvin a Celsius
+
+    return steinhart;
 }
-
-
-
-
-
 
 void app_main(void)
 {
@@ -76,11 +71,7 @@ void app_main(void)
     adc_cali_handle_t adc1_cali_chan0_handle = NULL;
     bool do_calibration1_chan0 = example_adc_calibration_init(ADC_UNIT_1, EXAMPLE_ADC1_CHAN0, EXAMPLE_ADC_ATTEN, &adc1_cali_chan0_handle);
 
-
-
-
     while (1) {
-        
         ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, EXAMPLE_ADC1_CHAN0, &adc_raw));
         ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN0, adc_raw);
         if (do_calibration1_chan0) {
@@ -88,10 +79,7 @@ void app_main(void)
             ESP_LOGI(TAG, "ADC%d Channel[%d] Cali Voltage: %d mV", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN0, voltage);
         }
 
-
-        // Leer valor crudo del ADC
-
-        // Convertir valor crudo del ADC a temperatura
+        // Convertir el valor crudo del ADC a temperatura
         float temperature = adc_to_temperature(adc_raw);
 
         // Imprimir temperatura en la terminal
