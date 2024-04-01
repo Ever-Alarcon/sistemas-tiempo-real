@@ -1,7 +1,7 @@
 /*
  * SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
  *
- * SPDX-License-Identifier: Apache-2.0				ecuación de Steinhart-Hart
+ * SPDX-License-Identifier: Apache-2.0			agregar potenciometro y linealizar
  */
 
 
@@ -18,11 +18,22 @@
 
 const static char *TAG = "EXAMPLE";
 
-#define EXAMPLE_ADC1_CHAN0          ADC_CHANNEL_4
-#define EXAMPLE_ADC_ATTEN           ADC_ATTEN_DB_12
 
-static int adc_raw;
-static int voltage;
+/*---------------------------------------------------------------
+        ADC General Macros
+---------------------------------------------------------------*/
+//ADC1 Channels
+#if CONFIG_IDF_TARGET_ESP32
+#define EXAMPLE_ADC1_CHAN0          ADC_CHANNEL_4
+#define EXAMPLE_ADC1_CHAN1          ADC_CHANNEL_5
+#define EXAMPLE_ADC_ATTEN           ADC_ATTEN_DB_12
+#else
+#define EXAMPLE_ADC1_CHAN0          ADC_CHANNEL_2
+#define EXAMPLE_ADC1_CHAN1          ADC_CHANNEL_3
+#endif
+
+static int adc_raw[2][10];
+static int voltage[2][10];
 
 static bool example_adc_calibration_init(adc_unit_t unit, adc_channel_t channel, adc_atten_t atten, adc_cali_handle_t *out_handle);
 static void example_adc_calibration_deinit(adc_cali_handle_t handle);
@@ -33,6 +44,8 @@ static void example_adc_calibration_deinit(adc_cali_handle_t handle);
 #define ADC_REFERENCE_VOLTAGE 3300.0 // mV
 #define BETA 3950  // Coeficiente Beta del NTC
 #define AMBIENT_TEMPERATURE 25  // Temperatura ambiente de referencia
+
+#define POT_MAX_RESISTANCE 10000.0 // Resistencia máxima del potenciómetro (en Ohms)
 
 static float adc_to_temperature(int adc_raw) {
     // Convertir la lectura cruda del ADC a resistencia del NTC
@@ -51,6 +64,14 @@ static float adc_to_temperature(int adc_raw) {
     return steinhart;
 }
 
+// Función para convertir la lectura del ADC del potenciómetro a voltaje linealizado
+static float pot_adc_to_voltage(int adc_raw) {
+    float pot_resistance = (adc_raw * POT_MAX_RESISTANCE) / 4095.0; // 4095 es el valor máximo de la lectura cruda del ADC
+    float voltage = (pot_resistance / POT_MAX_RESISTANCE) * ADC_REFERENCE_VOLTAGE;
+    return voltage;
+}
+
+
 void app_main(void)
 {
     //-------------ADC1 Init---------------//
@@ -67,25 +88,40 @@ void app_main(void)
     };
     ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, EXAMPLE_ADC1_CHAN0, &config));
 
+
     //-------------ADC1 Calibration Init---------------//
     adc_cali_handle_t adc1_cali_chan0_handle = NULL;
+    adc_cali_handle_t adc1_cali_chan1_handle = NULL;
     bool do_calibration1_chan0 = example_adc_calibration_init(ADC_UNIT_1, EXAMPLE_ADC1_CHAN0, EXAMPLE_ADC_ATTEN, &adc1_cali_chan0_handle);
+    bool do_calibration1_chan1 = example_adc_calibration_init(ADC_UNIT_1, EXAMPLE_ADC1_CHAN1, EXAMPLE_ADC_ATTEN, &adc1_cali_chan1_handle);
 
     while (1) {
-        ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, EXAMPLE_ADC1_CHAN0, &adc_raw));
-        ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN0, adc_raw);
+        ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, EXAMPLE_ADC1_CHAN0, &adc_raw[0][0]));
+        ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN0, adc_raw[0][0]);
         if (do_calibration1_chan0) {
-            ESP_ERROR_CHECK(adc_cali_raw_to_voltage(adc1_cali_chan0_handle, adc_raw, &voltage));
-            ESP_LOGI(TAG, "ADC%d Channel[%d] Cali Voltage: %d mV", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN0, voltage);
+            ESP_ERROR_CHECK(adc_cali_raw_to_voltage(adc1_cali_chan0_handle, adc_raw[0][0], &voltage[0][0]));
+            ESP_LOGI(TAG, "ADC%d Channel[%d] Cali Voltage: %d mV", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN0, voltage[0][0]);
         }
-
         // Convertir el valor crudo del ADC a temperatura
-        float temperature = adc_to_temperature(adc_raw);
-
+        float temperature = adc_to_temperature(adc_raw[0][0]);
         // Imprimir temperatura en la terminal
         ESP_LOGI(TAG, "Temperatura: %.2f °C", temperature);
+        
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, EXAMPLE_ADC1_CHAN1, &adc_raw[0][1]));
+        ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN1, adc_raw[0][1]);
+        if (do_calibration1_chan1) {
+            ESP_ERROR_CHECK(adc_cali_raw_to_voltage(adc1_cali_chan1_handle, adc_raw[0][1], &voltage[0][1]));
+            ESP_LOGI(TAG, "Pot ADC Channel Cali Voltage: %d mV", voltage[0][1]);
+        }
+
+        float voltaje_pot = pot_adc_to_voltage(adc_raw[0][1]);
+        // Imprimir voltaje lineal en la terminal
+        ESP_LOGI(TAG, "voltaje lineal: %.2f ", voltaje_pot);
 
         vTaskDelay(pdMS_TO_TICKS(1000));
+
     }
 
     //Tear Down
