@@ -1,9 +1,3 @@
-/*
- * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
 #include <string.h>
 #include <stdio.h>
 #include "sdkconfig.h"
@@ -12,6 +6,8 @@
 #include "freertos/task.h"
 #include "freertos/semphr.h"
 #include "esp_adc/adc_continuous.h"
+
+// Añadir aquí el contenido del archivo adc.h
 
 #define EXAMPLE_ADC_UNIT                    ADC_UNIT_1
 #define _EXAMPLE_ADC_UNIT_STR(unit)         #unit
@@ -32,11 +28,13 @@
 
 #define EXAMPLE_READ_LEN                    256
 
-#if CONFIG_IDF_TARGET_ESP32
-static adc_channel_t channel[2] = {ADC_CHANNEL_6, ADC_CHANNEL_7};
+/*#if CONFIG_IDF_TARGET_ESP32
+static adc_channel_t channel[2] = {ADC_CHANNEL_2, ADC_CHANNEL_3};
 #else
 static adc_channel_t channel[2] = {ADC_CHANNEL_2, ADC_CHANNEL_3};
-#endif
+#endif*/
+#define NTC_ADC_CHANNEL ADC_CHANNEL_2 
+
 
 static TaskHandle_t s_task_handle;
 static const char *TAG = "EXAMPLE";
@@ -78,6 +76,16 @@ static void continuous_adc_init(adc_channel_t *channel, uint8_t channel_num, adc
         ESP_LOGI(TAG, "adc_pattern[%d].channel is :%"PRIx8, i, adc_pattern[i].channel);
         ESP_LOGI(TAG, "adc_pattern[%d].unit is :%"PRIx8, i, adc_pattern[i].unit);
     }
+
+
+    // Agregar el canal ADC del sensor NTC a la configuración
+    adc_pattern[channel_num].atten = EXAMPLE_ADC_ATTEN;
+    adc_pattern[channel_num].channel = NTC_ADC_CHANNEL;
+    adc_pattern[channel_num].unit = EXAMPLE_ADC_UNIT;
+    adc_pattern[channel_num].bit_width = EXAMPLE_ADC_BIT_WIDTH;
+
+
+
     dig_cfg.adc_pattern = adc_pattern;
     ESP_ERROR_CHECK(adc_continuous_config(handle, &dig_cfg));
 
@@ -93,6 +101,8 @@ void app_main(void)
 
     s_task_handle = xTaskGetCurrentTaskHandle();
 
+    //solo la primera linea
+    adc_channel_t channel[] = {ADC_CHANNEL_2}; // Canales ADC existentes más el canal del sensor NTC
     adc_continuous_handle_t handle = NULL;
     continuous_adc_init(channel, sizeof(channel) / sizeof(adc_channel_t), &handle);
 
@@ -104,14 +114,6 @@ void app_main(void)
 
     while (1) {
 
-        /**
-         * This is to show you the way to use the ADC continuous mode driver event callback.
-         * This `ulTaskNotifyTake` will block when the data processing in the task is fast.
-         * However in this example, the data processing (print) is slow, so you barely block here.
-         *
-         * Without using this event callback (to notify this task), you can still just call
-         * `adc_continuous_read()` here in a loop, with/without a certain block timeout.
-         */
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         char unit[] = EXAMPLE_ADC_UNIT_STR(EXAMPLE_ADC_UNIT);
@@ -124,21 +126,14 @@ void app_main(void)
                     adc_digi_output_data_t *p = (adc_digi_output_data_t*)&result[i];
                     uint32_t chan_num = EXAMPLE_ADC_GET_CHANNEL(p);
                     uint32_t data = EXAMPLE_ADC_GET_DATA(p);
-                    /* Check the channel number validation, the data is invalid if the channel num exceed the maximum channel */
                     if (chan_num < SOC_ADC_CHANNEL_NUM(EXAMPLE_ADC_UNIT)) {
                         ESP_LOGI(TAG, "Unit: %s, Channel: %"PRIu32", Value: %"PRIx32, unit, chan_num, data);
                     } else {
                         ESP_LOGW(TAG, "Invalid data [%s_%"PRIu32"_%"PRIx32"]", unit, chan_num, data);
                     }
                 }
-                /**
-                 * Because printing is slow, so every time you call `ulTaskNotifyTake`, it will immediately return.
-                 * To avoid a task watchdog timeout, add a delay here. When you replace the way you process the data,
-                 * usually you don't need this delay (as this task will block for a while).
-                 */
                 vTaskDelay(1);
             } else if (ret == ESP_ERR_TIMEOUT) {
-                //We try to read `EXAMPLE_READ_LEN` until API returns timeout, which means there's no available data
                 break;
             }
         }
