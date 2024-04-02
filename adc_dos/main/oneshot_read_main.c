@@ -1,7 +1,7 @@
 /*
  * SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
  *
- * SPDX-License-Identifier: Apache-2.0 				solo faltan leds
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 
@@ -130,13 +130,13 @@ void app_main(void)
         // Imprimir temperatura en la terminal
         ESP_LOGI(TAG, "Temperatura: %.2f °C", temperature);
 
-        if (temperature>0 && temperature<20)
-            RGB_CHANGE(led_rgb_1, 0, 100, 0);
-        else if (temperature>20 && temperature<30)
-            RGB_CHANGE(led_rgb_1, 0, 0, 220);
-        else
-            RGB_CHANGE(led_rgb_1, 50, 0, 0);
-        
+        if (temperature>0 && temperature<20){
+            RGB_CHANGE(led_rgb_1, 225, 0, 225);
+        }else if (temperature>20 && temperature<30){
+            RGB_CHANGE(led_rgb_1, 225, 225, 0);
+        }else{
+            RGB_CHANGE(led_rgb_1, 0, 225, 225);
+        }
         vTaskDelay(pdMS_TO_TICKS(1000));
 
         
@@ -153,6 +153,17 @@ void app_main(void)
         float voltaje_pot = pot_adc_to_voltage(adc_raw[0][1]);
         // Imprimir voltaje lineal en la terminal
         ESP_LOGI(TAG, "voltaje lineal: %.2f ", voltaje_pot);
+
+
+        if (voltaje_pot>0 && voltaje_pot<1100){
+            RGB_CHANGE(led_rgb_2, 225, 0, 225);        
+        }else if (voltaje_pot>1100 && voltaje_pot<2200){
+            RGB_CHANGE(led_rgb_2, 225, 225, 0);
+        }else{
+            RGB_CHANGE(led_rgb_2, 0, 225, 225);
+        }
+
+
 
         vTaskDelay(pdMS_TO_TICKS(1000));
 
