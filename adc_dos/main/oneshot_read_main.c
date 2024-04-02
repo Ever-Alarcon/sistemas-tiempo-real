@@ -1,7 +1,7 @@
 /*
  * SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
  *
- * SPDX-License-Identifier: Apache-2.0			agregar potenciometro y linealizar
+ * SPDX-License-Identifier: Apache-2.0 				solo faltan leds
  */
 
 
@@ -16,16 +16,34 @@
 #include "esp_adc/adc_cali_scheme.h"
 #include <math.h>
 
+
+
+#include <inttypes.h>
+#include "freertos/queue.h"
+#include "driver/gpio.h"
+#include "driver/ledc.h"
+#include "esp_err.h"
+#include "rgb.h"
+
+
+
 const static char *TAG = "EXAMPLE";
 
+// Definiendo los pines de los Leds
+#define GPIO_LED_1_R           (13)
+#define GPIO_LED_1_G           (12)
+#define GPIO_LED_1_B           (14)
+#define GPIO_LED_2_R           (27)
+#define GPIO_LED_2_G           (26)
+#define GPIO_LED_2_B           (25)
 
 /*---------------------------------------------------------------
         ADC General Macros
 ---------------------------------------------------------------*/
 //ADC1 Channels
 #if CONFIG_IDF_TARGET_ESP32
-#define EXAMPLE_ADC1_CHAN0          ADC_CHANNEL_4
-#define EXAMPLE_ADC1_CHAN1          ADC_CHANNEL_5
+#define EXAMPLE_ADC1_CHAN0          ADC_CHANNEL_6
+#define EXAMPLE_ADC1_CHAN1          ADC_CHANNEL_7
 #define EXAMPLE_ADC_ATTEN           ADC_ATTEN_DB_12
 #else
 #define EXAMPLE_ADC1_CHAN0          ADC_CHANNEL_2
@@ -74,6 +92,11 @@ static float pot_adc_to_voltage(int adc_raw) {
 
 void app_main(void)
 {
+     // Inicializando el timer y los canales
+    RGB_TIMER_INIT();
+    led_rgb_t led_rgb_1 = RGB_CHANNEL_INIT_1(GPIO_LED_1_R, GPIO_LED_1_G, GPIO_LED_1_B);
+    led_rgb_t led_rgb_2 = RGB_CHANNEL_INIT_2(GPIO_LED_2_R, GPIO_LED_2_G, GPIO_LED_2_B);
+
     //-------------ADC1 Init---------------//
     adc_oneshot_unit_handle_t adc1_handle;
     adc_oneshot_unit_init_cfg_t init_config1 = {
@@ -106,8 +129,19 @@ void app_main(void)
         float temperature = adc_to_temperature(adc_raw[0][0]);
         // Imprimir temperatura en la terminal
         ESP_LOGI(TAG, "Temperatura: %.2f °C", temperature);
+
+        if (temperature>0 && temperature<20)
+            RGB_CHANGE(led_rgb_1, 0, 100, 0);
+        else if (temperature>20 && temperature<30)
+            RGB_CHANGE(led_rgb_1, 0, 0, 220);
+        else
+            RGB_CHANGE(led_rgb_1, 50, 0, 0);
         
         vTaskDelay(pdMS_TO_TICKS(1000));
+
+        
+
+
 
         ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, EXAMPLE_ADC1_CHAN1, &adc_raw[0][1]));
         ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN1, adc_raw[0][1]);
