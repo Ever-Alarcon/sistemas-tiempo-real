@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "UART-RGB",
-    "project_version":    "1e675f2",
+    "project_version":    "299db54-dirty",
     "project_path":       "C:/ESP32/sistemas-tiempo-real/UART-RGB",
     "idf_path":           "C:/esp/v5.2/esp-idf",
     "build_dir":          "C:/ESP32/sistemas-tiempo-real/UART-RGB/build",
@@ -805,7 +805,7 @@
             "managed_reqs": [],
             "managed_priv_reqs": [],
             "file": "C:/ESP32/sistemas-tiempo-real/UART-RGB/build/esp-idf/main/libmain.a",
-            "sources": [ "C:/ESP32/sistemas-tiempo-real/UART-RGB/main/rgb.c", "C:/ESP32/sistemas-tiempo-real/UART-RGB/main/main.c" ],
+            "sources": [ "C:/ESP32/sistemas-tiempo-real/UART-RGB/main/rgb.c", "C:/ESP32/sistemas-tiempo-real/UART-RGB/main/ESP32Utilidades.c", "C:/ESP32/sistemas-tiempo-real/UART-RGB/main/main.c" ],
             "include_dirs": [ "." ]
         },
         "mbedtls": {

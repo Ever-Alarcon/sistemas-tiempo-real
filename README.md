@@ -9,8 +9,8 @@ Tarea 2: RGB + PWM: Libreria-RGB
 Tarea 3: Pot + NTC: adc_dos
 > Se varia la intensidad de los RGB son un pot y una NTC
 
-Tarea 4: Uart
-> Se envian comandos por Uart para variar la intensidad de cada color del RGB
+Tarea 4: Uart + RGB: UART-RGB
+> Se envian comandos por Uart para variar la intensidad de cada color del RGB (ej. LEDR150)
 
 ## Ever Yofre Alarcon
 ## Juan Diego Castaño
