@@ -1,35 +1,21 @@
-| Supported Targets | ESP32 | ESP32-C2 | ESP32-C3 | ESP32-C6 | ESP32-H2 | ESP32-P4 | ESP32-S2 | ESP32-S3 |
-| ----------------- | ----- | -------- | -------- | -------- | -------- | -------- | -------- | -------- |
+# 05_UART_RGB
 
-# _Sample project_
+Este código es para un programa en un ESP32 que utiliza FreeRTOS para manejar la comunicación UART y controlar un LED RGB.
 
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
+Se un RGB cátodo comun conectado a los GPIO 12, 13 y 14, junto a sus resistencias de protección.
 
-This is the simplest buildable example. The example is used by command `idf.py create-project`
-that copies the project to user specified path and set it's name. For more information follow the [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project)
+Se emplean librerias personalizadas `rgb.h` y `ESP32Utilidades.h`. La primera se usa para el manejo del timer y la segunda guarda la inicialización y el envio basico del UART.
 
+> Se explica más detalladamente en el [main.c](https://github.com/Ever-Alarcon/sistemas-tiempo-real/blob/main/UART-RGB/main/main.c).
 
+El comando a recibir es `LEDR101`, la cuarta letra puede ser R, G o B, y el número es una de tres cifras entre 0 y 255.
 
-## How to use example
-We encourage the users to use the example as a template for the new projects.
-A recommended way is to follow the instructions on a [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project).
+## UART
 
-## Example folder contents
+El ESP32-WROOM-32 tiene 3 UART's diferentes:
 
-The project **sample_project** contains one source file in C language [main.c](main/main.c). The file is located in folder [main](main).
+* UART0: GPIO1(Tx) y GPIO3(Rx). Conectado al USB diracto al PC.
+* UART1: GPIO5(Tx) y GPIO4(Rx). Conectado a SPI (SP3-SP2), no recomendado.
+* UART2: GPIO17(Tx) y GPIO16(Rx).
 
-ESP-IDF projects are built using CMake. The project build configuration is contained in `CMakeLists.txt`
-files that provide set of directives and instructions describing the project's source files and targets
-(executable, library, or both). 
-
-Below is short explanation of remaining files in the project folder.
-
-```
-├── CMakeLists.txt
-├── main
-│   ├── CMakeLists.txt
-│   └── main.c
-└── README.md                  This is the file you are currently reading
-```
-Additionally, the sample project contains Makefile and component.mk files, used for the legacy Make based build system. 
-They are not used or needed when building with CMake and idf.py.
+> Si se trabaja desde una herramienta para la comunicacion serial desde el PC, se recomienda ir al SDK Configuration Editor (menuconfig) y poner ESP System Settings en None.

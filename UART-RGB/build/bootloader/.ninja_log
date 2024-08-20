@@ -208,3 +208,5 @@
 14684	15674	7458081453433809	C:/ESP32/sistemas-tiempo-real/UART-RGB/build/bootloader/.bin_timestamp	f1f1144865ffa192
 15674	15924	0	esp-idf/esptool_py/CMakeFiles/bootloader_check_size	d38a38eb23c83c63
 15674	15924	0	C:/ESP32/sistemas-tiempo-real/UART-RGB/build/bootloader/esp-idf/esptool_py/CMakeFiles/bootloader_check_size	d38a38eb23c83c63
+245	379	0	esp-idf/esptool_py/CMakeFiles/bootloader_check_size	d38a38eb23c83c63
+245	379	0	C:/ESP32/sistemas-tiempo-real/UART-RGB/build/bootloader/esp-idf/esptool_py/CMakeFiles/bootloader_check_size	d38a38eb23c83c63
