@@ -28,7 +28,7 @@
 -- Found Python3: C:/Users/juni0/.espressif/python_env/idf5.2_py3.11_env/Scripts/python.exe (found version "3.11.2") found components: Interpreter 
 -- Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS
 -- Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS - Success
--- App "adc_dos" version: d019746-dirty
+-- App "adc_dos" version: b2fce3a-dirty
 -- Adding linker script C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/adc_dos/build/esp-idf/esp_system/ld/memory.ld
 -- Adding linker script C:/Users/juni0/esp/v5.2/esp-idf/components/esp_system/ld/esp32/sections.ld.in
 -- Adding linker script C:/Users/juni0/esp/v5.2/esp-idf/components/esp_rom/esp32/ld/esp32.rom.ld

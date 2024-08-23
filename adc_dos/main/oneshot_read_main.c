@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,9 +14,6 @@
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
 #include <math.h>
-
-
-
 #include <inttypes.h>
 #include "freertos/queue.h"
 #include "driver/gpio.h"
@@ -25,45 +21,86 @@
 #include "esp_err.h"
 #include "rgb.h"
 
-
-
 const static char *TAG = "EXAMPLE";
 
 // Definiendo los pines de los Leds
-#define GPIO_LED_1_R           (13)
-#define GPIO_LED_1_G           (12)
-#define GPIO_LED_1_B           (14)
-#define GPIO_LED_2_R           (27)
-#define GPIO_LED_2_G           (26)
-#define GPIO_LED_2_B           (25)
+#define GPIO_LED_1_R (13)
+#define GPIO_LED_1_G (12)
+#define GPIO_LED_1_B (14)
+#define GPIO_LED_2_R (27)
+#define GPIO_LED_2_G (26)
+#define GPIO_LED_2_B (25)
 
 /*---------------------------------------------------------------
         ADC General Macros
 ---------------------------------------------------------------*/
-//ADC1 Channels
+// ADC1 Channels
 #if CONFIG_IDF_TARGET_ESP32
-#define EXAMPLE_ADC1_CHAN0          ADC_CHANNEL_6
-#define EXAMPLE_ADC1_CHAN1          ADC_CHANNEL_7
-#define EXAMPLE_ADC_ATTEN           ADC_ATTEN_DB_12
+#define EXAMPLE_ADC1_CHAN0 ADC_CHANNEL_6
+#define EXAMPLE_ADC1_CHAN1 ADC_CHANNEL_7
+#define EXAMPLE_ADC_ATTEN ADC_ATTEN_DB_12
 #else
-#define EXAMPLE_ADC1_CHAN0          ADC_CHANNEL_2
-#define EXAMPLE_ADC1_CHAN1          ADC_CHANNEL_3
+#define EXAMPLE_ADC1_CHAN0 ADC_CHANNEL_2
+#define EXAMPLE_ADC1_CHAN1 ADC_CHANNEL_3
 #endif
+
+// Parámetros de la ecuación de Steinhart-Hart
+#define NTC_RESISTANCE 10000.0
+#define REFERENCE_RESISTANCE 10000.0
+#define ADC_REFERENCE_VOLTAGE 3300.0
+#define BETA 3950
+#define AMBIENT_TEMPERATURE 25
+
+#define POT_MAX_RESISTANCE 10000.0
 
 static int adc_raw[2][10];
 static int voltage[2][10];
 
+// Prototipos de funciones
+static void init_leds(led_rgb_t *led_rgb_1, led_rgb_t *led_rgb_2);
+static void init_adc(adc_oneshot_unit_handle_t *adc1_handle, adc_cali_handle_t *adc1_cali_chan0_handle, adc_cali_handle_t *adc1_cali_chan1_handle);
+static void read_adc_temperature(adc_oneshot_unit_handle_t adc1_handle, adc_cali_handle_t adc1_cali_chan0_handle, led_rgb_t *led_rgb_1);
+static void read_adc_potentiometer(adc_oneshot_unit_handle_t adc1_handle, adc_cali_handle_t adc1_cali_chan1_handle, led_rgb_t *led_rgb_2);
+static float adc_to_temperature(int adc_raw);
+static float pot_adc_to_voltage(int adc_raw);
 static bool example_adc_calibration_init(adc_unit_t unit, adc_channel_t channel, adc_atten_t atten, adc_cali_handle_t *out_handle);
 static void example_adc_calibration_deinit(adc_cali_handle_t handle);
 
-// Parámetros de la ecuación de Steinhart-Hart
-#define NTC_RESISTANCE 10000.0  // Resistencia nominal del NTC en Ohm
-#define REFERENCE_RESISTANCE 10000.0  // Resistencia de referencia en Ohm
-#define ADC_REFERENCE_VOLTAGE 3300.0 // mV
-#define BETA 3950  // Coeficiente Beta del NTC
-#define AMBIENT_TEMPERATURE 25  // Temperatura ambiente de referencia
+void app_main(void) {
+    // Inicializar LEDs
+    led_rgb_t led_rgb_1, led_rgb_2;
+    init_leds(&led_rgb_1, &led_rgb_2);
 
-#define POT_MAX_RESISTANCE 10000.0 // Resistencia máxima del potenciómetro (en Ohms)
+    // Inicializar ADC y calibración
+    adc_oneshot_unit_handle_t adc1_handle;
+    adc_cali_handle_t adc1_cali_chan0_handle = NULL;
+    adc_cali_handle_t adc1_cali_chan1_handle = NULL;
+    init_adc(&adc1_handle, &adc1_cali_chan0_handle, &adc1_cali_chan1_handle);
+
+    // Bucle principal
+    while (1) {
+        read_adc_temperature(adc1_handle, adc1_cali_chan0_handle, &led_rgb_1);
+        read_adc_potentiometer(adc1_handle, adc1_cali_chan1_handle, &led_rgb_2);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+
+    // Finalizar
+    ESP_ERROR_CHECK(adc_oneshot_del_unit(adc1_handle));
+    if (adc1_cali_chan0_handle) {
+        example_adc_calibration_deinit(adc1_cali_chan0_handle);
+    }
+    if (adc1_cali_chan1_handle) {
+        example_adc_calibration_deinit(adc1_cali_chan1_handle);
+    }
+}
+
+// Implementación de la función
+static float pot_adc_to_voltage(int adc_raw) {
+    float pot_resistance = (adc_raw * POT_MAX_RESISTANCE) / 4095.0; // 4095 es el valor máximo de la lectura cruda del ADC
+    float voltage = (pot_resistance / POT_MAX_RESISTANCE) * ADC_REFERENCE_VOLTAGE;
+    return voltage;
+}
+
 
 static float adc_to_temperature(int adc_raw) {
     // Convertir la lectura cruda del ADC a resistencia del NTC
@@ -82,99 +119,73 @@ static float adc_to_temperature(int adc_raw) {
     return steinhart;
 }
 
-// Función para convertir la lectura del ADC del potenciómetro a voltaje linealizado
-static float pot_adc_to_voltage(int adc_raw) {
-    float pot_resistance = (adc_raw * POT_MAX_RESISTANCE) / 4095.0; // 4095 es el valor máximo de la lectura cruda del ADC
-    float voltage = (pot_resistance / POT_MAX_RESISTANCE) * ADC_REFERENCE_VOLTAGE;
-    return voltage;
+
+static void init_leds(led_rgb_t *led_rgb_1, led_rgb_t *led_rgb_2) {
+    RGB_TIMER_INIT();
+    *led_rgb_1 = RGB_CHANNEL_INIT_1(GPIO_LED_1_R, GPIO_LED_1_G, GPIO_LED_1_B);
+    *led_rgb_2 = RGB_CHANNEL_INIT_2(GPIO_LED_2_R, GPIO_LED_2_G, GPIO_LED_2_B);
 }
 
+static void init_adc(adc_oneshot_unit_handle_t *adc1_handle, adc_cali_handle_t *adc1_cali_chan0_handle, adc_cali_handle_t *adc1_cali_chan1_handle) {
+    adc_oneshot_unit_init_cfg_t init_config1 = {.unit_id = ADC_UNIT_1};
+    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, adc1_handle));
 
-void app_main(void)
-{
-     // Inicializando el timer y los canales
-    RGB_TIMER_INIT();
-    led_rgb_t led_rgb_1 = RGB_CHANNEL_INIT_1(GPIO_LED_1_R, GPIO_LED_1_G, GPIO_LED_1_B);
-    led_rgb_t led_rgb_2 = RGB_CHANNEL_INIT_2(GPIO_LED_2_R, GPIO_LED_2_G, GPIO_LED_2_B);
-
-    //-------------ADC1 Init---------------//
-    adc_oneshot_unit_handle_t adc1_handle;
-    adc_oneshot_unit_init_cfg_t init_config1 = {
-        .unit_id = ADC_UNIT_1,
-    };
-    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
-
-    //-------------ADC1 Config---------------//
     adc_oneshot_chan_cfg_t config = {
         .bitwidth = ADC_BITWIDTH_DEFAULT,
         .atten = EXAMPLE_ADC_ATTEN,
     };
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, EXAMPLE_ADC1_CHAN0, &config));
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(*adc1_handle, EXAMPLE_ADC1_CHAN0, &config));
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(*adc1_handle, EXAMPLE_ADC1_CHAN1, &config));
 
+    *adc1_cali_chan0_handle = NULL;
+    *adc1_cali_chan1_handle = NULL;
+    example_adc_calibration_init(ADC_UNIT_1, EXAMPLE_ADC1_CHAN0, EXAMPLE_ADC_ATTEN, adc1_cali_chan0_handle);
+    example_adc_calibration_init(ADC_UNIT_1, EXAMPLE_ADC1_CHAN1, EXAMPLE_ADC_ATTEN, adc1_cali_chan1_handle);
+}
 
-    //-------------ADC1 Calibration Init---------------//
-    adc_cali_handle_t adc1_cali_chan0_handle = NULL;
-    adc_cali_handle_t adc1_cali_chan1_handle = NULL;
-    bool do_calibration1_chan0 = example_adc_calibration_init(ADC_UNIT_1, EXAMPLE_ADC1_CHAN0, EXAMPLE_ADC_ATTEN, &adc1_cali_chan0_handle);
-    bool do_calibration1_chan1 = example_adc_calibration_init(ADC_UNIT_1, EXAMPLE_ADC1_CHAN1, EXAMPLE_ADC_ATTEN, &adc1_cali_chan1_handle);
-
-    while (1) {
-        ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, EXAMPLE_ADC1_CHAN0, &adc_raw[0][0]));
-        ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN0, adc_raw[0][0]);
-        if (do_calibration1_chan0) {
-            ESP_ERROR_CHECK(adc_cali_raw_to_voltage(adc1_cali_chan0_handle, adc_raw[0][0], &voltage[0][0]));
-            ESP_LOGI(TAG, "ADC%d Channel[%d] Cali Voltage: %d mV", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN0, voltage[0][0]);
-        }
-        // Convertir el valor crudo del ADC a temperatura
-        float temperature = adc_to_temperature(adc_raw[0][0]);
-        // Imprimir temperatura en la terminal
-        ESP_LOGI(TAG, "Temperatura: %.2f °C", temperature);
-
-        if (temperature>0 && temperature<20){
-            RGB_CHANGE(led_rgb_1, 225, 0, 225);
-        }else if (temperature>20 && temperature<30){
-            RGB_CHANGE(led_rgb_1, 225, 225, 0);
-        }else{
-            RGB_CHANGE(led_rgb_1, 0, 225, 225);
-        }
-        vTaskDelay(pdMS_TO_TICKS(1000));
-
-        
-
-
-
-        ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, EXAMPLE_ADC1_CHAN1, &adc_raw[0][1]));
-        ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN1, adc_raw[0][1]);
-        if (do_calibration1_chan1) {
-            ESP_ERROR_CHECK(adc_cali_raw_to_voltage(adc1_cali_chan1_handle, adc_raw[0][1], &voltage[0][1]));
-            ESP_LOGI(TAG, "Pot ADC Channel Cali Voltage: %d mV", voltage[0][1]);
-        }
-
-        float voltaje_pot = pot_adc_to_voltage(adc_raw[0][1]);
-        // Imprimir voltaje lineal en la terminal
-        ESP_LOGI(TAG, "voltaje lineal: %.2f ", voltaje_pot);
-
-
-        if (voltaje_pot>0 && voltaje_pot<1100){
-            RGB_CHANGE(led_rgb_2, 225, 0, 225);        
-        }else if (voltaje_pot>1100 && voltaje_pot<2200){
-            RGB_CHANGE(led_rgb_2, 225, 225, 0);
-        }else{
-            RGB_CHANGE(led_rgb_2, 0, 225, 225);
-        }
-
-
-
-        vTaskDelay(pdMS_TO_TICKS(1000));
-
+static void read_adc_temperature(adc_oneshot_unit_handle_t adc1_handle, adc_cali_handle_t adc1_cali_chan0_handle, led_rgb_t *led_rgb_1) {
+    ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, EXAMPLE_ADC1_CHAN0, &adc_raw[0][0]));
+    ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN0, adc_raw[0][0]);
+    
+    if (adc1_cali_chan0_handle) {
+        ESP_ERROR_CHECK(adc_cali_raw_to_voltage(adc1_cali_chan0_handle, adc_raw[0][0], &voltage[0][0]));
+        ESP_LOGI(TAG, "ADC%d Channel[%d] Cali Voltage: %d mV", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN0, voltage[0][0]);
     }
 
-    //Tear Down
-    ESP_ERROR_CHECK(adc_oneshot_del_unit(adc1_handle));
-    if (do_calibration1_chan0) {
-        example_adc_calibration_deinit(adc1_cali_chan0_handle);
+    float temperature = adc_to_temperature(adc_raw[0][0]);
+    ESP_LOGI(TAG, "Temperatura: %.2f °C", temperature);
+
+    if (temperature > 0 && temperature < 20) {
+        RGB_CHANGE(*led_rgb_1, 225, 0, 225);
+    } else if (temperature > 20 && temperature < 30) {
+        RGB_CHANGE(*led_rgb_1, 225, 225, 0);
+    } else {
+        RGB_CHANGE(*led_rgb_1, 0, 225, 225);
     }
 }
+
+static void read_adc_potentiometer(adc_oneshot_unit_handle_t adc1_handle, adc_cali_handle_t adc1_cali_chan1_handle, led_rgb_t *led_rgb_2) {
+    ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, EXAMPLE_ADC1_CHAN1, &adc_raw[0][1]));
+    ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN1, adc_raw[0][1]);
+
+    if (adc1_cali_chan1_handle) {
+        ESP_ERROR_CHECK(adc_cali_raw_to_voltage(adc1_cali_chan1_handle, adc_raw[0][1], &voltage[0][1]));
+        ESP_LOGI(TAG, "Pot ADC Channel Cali Voltage: %d mV", voltage[0][1]);
+    }
+
+    float voltaje_pot = pot_adc_to_voltage(adc_raw[0][1]);
+    ESP_LOGI(TAG, "Voltaje lineal: %.2f", voltaje_pot);
+
+    if (voltaje_pot > 0 && voltaje_pot < 1100) {
+        RGB_CHANGE(*led_rgb_2, 225, 0, 225);  // Color púrpura
+    } else if (voltaje_pot >= 1100 && voltaje_pot < 2200) {
+        RGB_CHANGE(*led_rgb_2, 225, 225, 0);  // Color amarillo
+    } else {
+        RGB_CHANGE(*led_rgb_2, 0, 225, 225);  // Color cian
+    }
+}
+
+
 
 /*---------------------------------------------------------------
         ADC Calibration
