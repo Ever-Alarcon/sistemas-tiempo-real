@@ -126,10 +126,11 @@ void app_main(void)
 {
     RGB_TIMER_INIT();
     led_rgb_1 = RGB_CHANNEL_INIT_1(GPIO_LED_1_R, GPIO_LED_1_G, GPIO_LED_1_B);
-    RGB_CHANGE(led_rgb_1, 255, 150, 250);
-        
+    RGB_CHANGE(led_rgb_1, 256, 256, 256);
+    /*    
     init_uart(UART_USED, RX_BUF_SIZE, TXD_PIN, RXD_PIN);
     xTaskCreate(rx_task, "uart_rx_task", 1024 * 2, NULL, configMAX_PRIORITIES - 1, NULL);
     xTaskCreate(tx_task, "uart_tx_task", 1024 * 2, NULL, configMAX_PRIORITIES - 2, NULL);
+    */
 
 }

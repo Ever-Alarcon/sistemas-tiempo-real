@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "UART-RGB",
-    "project_version":    "26dd5c3-dirty",
+    "project_version":    "5632a38-dirty",
     "project_path":       "C:/ESP32/sistemas-tiempo-real/UART-RGB",
     "idf_path":           "C:/esp/v5.2/esp-idf",
     "build_dir":          "C:/ESP32/sistemas-tiempo-real/UART-RGB/build",
