@@ -26,23 +26,32 @@
 #define ESP_WIFI_MY_SSID                        "AccessPoint_18"
 #define ESP_WIFI_CHANNEL                        1
 #define ESP_WIFI_MY_PASS                        "qwertyumm"
-#define EXAMPLE_MAX_STA_CONN                    4
+#define MAX_STA_CONN                            4
+
 
 // Variables para el control del tiempo
-
 TaskHandle_t  xHandle_task_time    = NULL;
-float delay_in_seconds = 2.5;
+float delay_in_seconds_task_time   = 2.5;
 
-
+// Variables para el Control de Wifi
 static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT      BIT1
-static int s_retry_num = 0;                
+static int s_retry_num     = 0;                
+
 
 static const char *TAG = "wifi ";
 
 
-
+static void NVS_init(void)
+{
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+      ESP_ERROR_CHECK(nvs_flash_erase());
+      ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
+}
 
 static void event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
@@ -80,6 +89,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 
 void wifi_init(void)
 {
+    ESP_LOGI(TAG, "ESP_WIFI_MODE_APSTA");
     s_wifi_event_group = xEventGroupCreate();
 
     // Inicialización del sistema de red e instancia de eventos
@@ -127,7 +137,7 @@ void wifi_init(void)
             .ssid_len = strlen(ESP_WIFI_MY_SSID),
             .channel = ESP_WIFI_CHANNEL,
             .password = ESP_WIFI_MY_PASS,
-            .max_connection = EXAMPLE_MAX_STA_CONN,
+            .max_connection = MAX_STA_CONN,
             .authmode = WIFI_AUTH_WPA2_PSK,
             .pmf_cfg = {
                     .required = true,
@@ -151,7 +161,7 @@ void wifi_init(void)
              ESP_WIFI_MY_SSID, ESP_WIFI_MY_PASS, ESP_WIFI_CHANNEL);
 
 
-    // Esperar la conexión o fallo
+    // Esperar si la conexión o fallo
     EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,
             WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
             pdFALSE,
@@ -211,13 +221,22 @@ void task_time(void *arg)
 {
     time_t now;
     struct tm timeinfo;
+    /*
+        Explicación Linea:
+            arg:                     Es un puntero de tipo void * que recibe la tarea.
+            (float *)arg:            Se castea a un puntero de tipo float. Le estamos diciendo al compilador que 
+                                     trate el valor de arg como si fuera un puntero que apunta a una variable de 
+                                     tipo float.
+            *(float *)arg:           El operador * desreferencia el puntero convertido. Estamos accediendo al valor
+                                     almacenado en la dirección de memoria apuntada por el puntero arg.
+    */
     float delay_seconds = *((float *)arg);
 
     while(1){
         vTaskDelay((int)(delay_seconds * 1000) / portTICK_PERIOD_MS);
         time(&now);
         localtime_r(&now, &timeinfo);
-        ESP_LOGI(TAG, "La hora es: %s", asctime(&timeinfo));
+        ESP_LOGI(TAG, "La fecha es: %s", asctime(&timeinfo));
     }
 
 }
@@ -226,22 +245,13 @@ void task_time(void *arg)
 
 void app_main(void)
 {
-    // Desahibita los log genericos de Wifi
-    esp_log_level_set("wifi",ESP_LOG_NONE);
+    NVS_init();
 
-    //Initialize NVS
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-      ESP_ERROR_CHECK(nvs_flash_erase());
-      ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(ret);
-
-    ESP_LOGI(TAG, "ESP_WIFI_MODE_APSTA");
+    esp_log_level_set("wifi",ESP_LOG_NONE); // Desahibita los log genericos de Wifi
     wifi_init();
 
     obtain_time();      // Inicializa y obtiene la hora actual
 
-    xTaskCreate(task_time, "T_time", 2048, &delay_in_seconds, 0, &xHandle_task_time);
+    xTaskCreate(task_time, "T_time", 2048, &delay_in_seconds_task_time, 0, &xHandle_task_time);
     configASSERT( xHandle_task_time );
 }
