@@ -11,6 +11,7 @@
 
 #include "lwip/err.h"
 #include "lwip/sys.h"
+#include "lwip/apps/sntp.h"
 
 
 // Definiciones Modo STA (STAtion)
@@ -27,20 +28,19 @@
 #define ESP_WIFI_MY_PASS                        "qwertyumm"
 #define EXAMPLE_MAX_STA_CONN                    4
 
+// Variables para el control del tiempo
+
+TaskHandle_t  xHandle_task_time    = NULL;
+float delay_in_seconds = 2.5;
 
 
-/* FreeRTOS event group to signal when we are connected*/
 static EventGroupHandle_t s_wifi_event_group;
-
-/* The event group allows multiple bits for each event, but we only care about two events:
- * - we are connected to the AP with an IP
- * - we failed to connect after the maximum amount of retries */
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT      BIT1
+static int s_retry_num = 0;                
 
 static const char *TAG = "wifi ";
 
-static int s_retry_num = 0;
 
 
 
@@ -80,7 +80,6 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 
 void wifi_init(void)
 {
-    // Creando instancia de wifi eventos
     s_wifi_event_group = xEventGroupCreate();
 
     // Inicialización del sistema de red e instancia de eventos
@@ -146,10 +145,10 @@ void wifi_init(void)
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config_STA));
     ESP_ERROR_CHECK(esp_wifi_start());
 
+
     ESP_LOGI(TAG, "wifi_init_sta finished.");
     ESP_LOGI(TAG, "wifi_init_softap finished. SSID:%s password:%s channel:%d",
              ESP_WIFI_MY_SSID, ESP_WIFI_MY_PASS, ESP_WIFI_CHANNEL);
-
 
 
     // Esperar la conexión o fallo
@@ -171,12 +170,64 @@ void wifi_init(void)
 
 }
 
+void initialize_sntp(void) {
+    ESP_LOGI(TAG, "Inicializando SNTP");
+    sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    sntp_setservername(0, "pool.ntp.org"); // Servidor NTP
+    sntp_init();
+}
+
+void obtain_time(void) {
+    initialize_sntp();
+
+    // Espera hasta obtener la hora
+    time_t now = 0;
+    struct tm timeinfo = { 0 };
+    int retry = 0;
+    const int retry_count = 10;
+
+    while(timeinfo.tm_year < (2016 - 1900) && ++retry < retry_count) {
+        ESP_LOGI(TAG, "Esperando obtener la hora... (%d/%d)", retry, retry_count);
+        vTaskDelay(3000 / portTICK_PERIOD_MS);
+        time(&now);
+        localtime_r(&now, &timeinfo);
+    }
+
+    if (timeinfo.tm_year < (2016 - 1900)) {
+        ESP_LOGE(TAG, "No se pudo obtener la hora actual.");
+    } else {
+        ESP_LOGI(TAG, "Hora actual obtenida correctamente.");
+
+        setenv("TZ", "COT5", 1);                 // Cambia a zona horaria
+        tzset();                                 // Aplica el ajuste de zona horaria
+        localtime_r(&now, &timeinfo);            // Vuelve a obtener la hora local con la zona horaria ajustada
+
+        ESP_LOGI(TAG, "La hora es: %s", asctime(&timeinfo));
+    }
+}
+
+
+void task_time(void *arg)
+{
+    time_t now;
+    struct tm timeinfo;
+    float delay_seconds = *((float *)arg);
+
+    while(1){
+        vTaskDelay((int)(delay_seconds * 1000) / portTICK_PERIOD_MS);
+        time(&now);
+        localtime_r(&now, &timeinfo);
+        ESP_LOGI(TAG, "La hora es: %s", asctime(&timeinfo));
+    }
+
+}
+
 
 
 void app_main(void)
 {
     // Desahibita los log genericos de Wifi
-    //esp_log_level_set("wifi",ESP_LOG_NONE);
+    esp_log_level_set("wifi",ESP_LOG_NONE);
 
     //Initialize NVS
     esp_err_t ret = nvs_flash_init();
@@ -188,4 +239,9 @@ void app_main(void)
 
     ESP_LOGI(TAG, "ESP_WIFI_MODE_APSTA");
     wifi_init();
+
+    obtain_time();      // Inicializa y obtiene la hora actual
+
+    xTaskCreate(task_time, "T_time", 2048, &delay_in_seconds, 0, &xHandle_task_time);
+    configASSERT( xHandle_task_time );
 }
