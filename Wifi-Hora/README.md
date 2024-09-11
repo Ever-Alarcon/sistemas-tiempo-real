@@ -67,7 +67,7 @@ I (3585) wifi : retry to connect to the AP
 I (3585) wifi : connect to the AP fail
 I (4645) esp_netif_handlers: sta ip: 192.168.1.76, mask: 255.255.255.0, gw: 192.168.1.254
 I (4645) wifi : got ip:192.168.1.76
-I (4645) wifi : connected to ap SSID:JyS password:Diego257b1321
+I (4645) wifi : connected to ap SSID:Xx password:Diego257b13
 I (4655) wifi : Inicializando SNTP
 I (4655) wifi : Esperando obtener la hora... (1/10)
 I (7665) wifi : Hora actual obtenida correctamente.

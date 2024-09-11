@@ -15,8 +15,8 @@
 
 
 // Definiciones Modo STA (STAtion)
-#define ESP_WIFI_SSID                          "JyS"
-#define ESP_WIFI_PASS                          "Diego257b1321"
+#define ESP_WIFI_SSID                          "Xx"
+#define ESP_WIFI_PASS                          "Diego257b13"
 #define ESP_MAXIMUM_RETRY_CONNECT               5
 #define ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD       WIFI_AUTH_WPA2_PSK
 #define ESP_WIFI_SAE_MODE                       WPA3_SAE_PWE_BOTH
@@ -252,6 +252,6 @@ void app_main(void)
 
     obtain_time();      // Inicializa y obtiene la hora actual
 
-    xTaskCreate(task_time, "T_time", 2048, &delay_in_seconds_task_time, 0, &xHandle_task_time);
+    xTaskCreate(task_time, "T_time", 1024, &delay_in_seconds_task_time, 0, &xHandle_task_time);
     configASSERT( xHandle_task_time );
 }
