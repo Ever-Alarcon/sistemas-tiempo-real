@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<script src='jquery-3.3.1.min.js'></script>
+		<link rel="stylesheet" href="app.css">
+		<script async src="app.js"></script>
+		<title>ESP32 Udemy Course</title>
+	</head>
+	<body>
+	<header>
+		<h1>ESP32 Aplicación Wifi</h1>
+	</header>
+	
+	<!--
+	<div id="OTA">
+	<h2>ESP32 Firmware Update</h2>
+		<label id="latest_firmware_label">Latest Firmware: </label>
+		<div id="latest_firmware"></div> 
+		<input type="file" id="selected_file" accept=".bin" style="display: none;" onchange="getFileInfo()" />
+		<div class="buttons">
+			<input type="button" value="Select File" onclick="document.getElementById('selected_file').click();" />
+			<input type="button" value="Update Firmware" onclick="updateFirmware()" />
+		</div>
+		<h4 id="file_info"></h4>	
+		<h4 id="ota_update_status"></h4>
+	</div>
+	-->
+
+	<!--
+	<div id="WiFiConnect">
+		<h2>ESP32 WiFi Connect</h2>
+		<section>
+			<input id="connect_ssid" type="text" maxlength="32" placeholder="SSID" value="">
+			<input id="connect_pass" type="password" maxlength="64" placeholder="Password" value="">
+			<input type="checkbox" onclick="showPassword()">Show Password
+		</section>
+		<div class="buttons">
+			<input id="connect_wifi" type="button" value="Connect" />
+			<button onclick="toogle_led()">toogle led</button>
+			
+		</div>
+		<div id="wifi_connect_credentials_errors"></div>
+		<h4 id="wifi_connect_status"></h4>
+	</div>
+	
+	-->	
+	<div class="buttons">
+		<!--<input id="connect_wifi" type="button" value="Connect" />-->
+		<button onclick="toogle_led()">toogle led</button>
+		
+	</div>
+
+
+	<div id="DHT22Sensor">
+		<h2>Leer Temperatura</h2>
+		<label for="temperature_reading">Temperature: </label>
+		<div id="temperature_reading"></div> 
+	</div>
+
+	<hr>
+	
+	<!--
+	<body>
+		<h2>Control de led RGB</h2>
+		<form>
+			<div>
+				<input type="radio" id="option1" name="options" value="Option1">
+				<label for="option1">Option 1</label>
+			</div>
+			<div>
+				<input type="radio" id="option2" name="options" value="Option2">
+				<label for="option2">Option 2</label>
+			</div>
+			<div>
+				<input type="radio" id="option3" name="options" value="Option3">
+				<label for="option3">Option 3</label>
+			</div>
+		</form>
+	</body>
+	-->
+
+
+
+
+
+	<!--
+	<div id="Configreading">
+		<h2>Tiempos configurados</h2>
+		<label for="reg_1">Registro 1: </label><br>
+		<label for="reg_2">Registro 2: </label><br>
+		<label for="reg_3">Registro 3: </label><br>
+		<label for="reg_4">Registro 4: </label><br>
+		<label for="reg_5">Registro 5: </label><br>
+		<label for="reg_6">Registro 6: </label><br>
+		<label for="reg_7">Registro 7: </label><br>
+		<label for="reg_8">Registro 8: </label><br>
+		<label for="reg_9">Registro 9: </label><br>
+		<label for="reg_10">Registro 10: </label><br>
+	</div>
+
+	<div id="Insert_mem">
+	-->
+	<!--
+	<hr>
+		
+		 <label for="selectNumber">Selecciona el registro a modificar:</label>
+		 <select id="selectNumber" name="selectNumber" value="1">
+			 <option value="1">1</option>
+			 <option value="2">2</option>
+			 <option value="3">3</option>
+			 <option value="4">4</option>
+			 <option value="5">5</option>
+			 <option value="6">6</option>
+			 <option value="7">7</option>
+			 <option value="8">8</option>
+			 <option value="9">9</option>
+			 <option value="10">10</option>
+		 </select>
+		 <br><br>
+
+   
+    <label for="hours">Hora:</label>
+    <input type="number" id="hours" name="hours" min="0" max="23" value="12">
+    
+    <label for="minutes">Minutos:</label>
+    <input type="number" id="minutes" name="minutes" min="0" max="59" value="30">
+
+    <br><br>
+
+    
+    <label>Días de la semana:</label><br>
+    <input type="checkbox" id="day_mon" name="day_mon" value="Monday" checked>
+    <label for="day_mon">Lunes</label>
+    
+    <input type="checkbox" id="day_tue" name="day_tue" value="Tuesday">
+    <label for="day_tue">Martes</label>
+    
+    <input type="checkbox" id="day_wed" name="day_wed" value="Wednesday">
+    <label for="day_wed">Miércoles</label>
+    
+    <input type="checkbox" id="day_thu" name="day_thu" value="Thursday">
+    <label for="day_thu">Jueves</label>
+    
+    <input type="checkbox" id="day_fri" name="day_fri" value="Friday">
+    <label for="day_fri">Viernes</label>
+    
+    <input type="checkbox" id="day_sat" name="day_sat" value="Saturday">
+    <label for="day_sat">Sábado</label>
+    
+    <input type="checkbox" id="day_sun" name="day_sun" value="Sunday">
+    <label for="day_sun">Domingo</label>
+	<br>
+	<button onclick="send_register()">Enviar Registro</button>
+	<button onclick="getregValues()">leer registro</button>
+	<button onclick="erase_reg()">borrar registro</button>
+	
+	</div>
+	-->
+
+	<!--
+	<h1>Control LED RGB</h1>
+    
+    <div>
+        <label for="color">Select Color:</label>
+        <select id="color">
+            <option value="red">Red</option>
+            <option value="green">Green</option>
+            <option value="blue">Blue</option>
+        </select>
+    </div>
+    
+    <div>
+        <button onclick="changeIntensity(-1)">Decrease Intensity</button>
+        <button onclick="changeIntensity(1)">Increase Intensity</button>
+    </div>
+    
+    <script>
+        let intensity = 0; // Initialize intensity (0-255)
+
+        function sendColor(red, green, blue) {
+            fetch('/set_color', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ red, green, blue }),
+            })
+            .then(response => response.text())
+            .then(data => console.log(data))
+            .catch((error) => console.error('Error:', error));
+        }
+
+        function changeIntensity(step) {
+            intensity += step * 50;
+            intensity = Math.max(0, Math.min(255, intensity)); // Clamp value between 0 and 255
+            
+            const colorSelect = document.getElementById('color');
+            const color = colorSelect.value;
+
+            let red = 0, green = 0, blue = 0;
+            switch (color) {
+                case 'red':
+                    red = intensity;
+                    break;
+                case 'green':
+                    green = intensity;
+                    break;
+                case 'blue':
+                    blue = intensity;
+                    break;
+            }
+
+            sendColor(red, green, blue);
+        }
+    </script>
+	-->
+
+
+	<h1>Control LED RGB</h1>
+    
+    <div>
+        <label>Select Color:</label>
+        <div>
+            <input type="radio" id="red" name="color" value="red">
+            <label for="red">Red</label>
+        </div>
+        <div>
+            <input type="radio" id="green" name="color" value="green">
+            <label for="green">Green</label>
+        </div>
+        <div>
+            <input type="radio" id="blue" name="color" value="blue">
+            <label for="blue">Blue</label>
+        </div>
+    </div>
+    
+    <div>
+        <button onclick="changeIntensity(-1)">Decrease Intensity</button>
+        <button onclick="changeIntensity(1)">Increase Intensity</button>
+    </div>
+    
+    <script>
+        let intensity = 0; // Initialize intensity (0-255)
+
+        function sendColor(red, green, blue) {
+            fetch('/set_color', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ red, green, blue }),
+            })
+            .then(response => response.text())
+            .then(data => console.log(data))
+            .catch((error) => console.error('Error:', error));
+        }
+
+        function changeIntensity(step) {
+            intensity += step * 50;
+            intensity = Math.max(0, Math.min(255, intensity)); // Clamp value between 0 and 255
+            
+            const colorElements = document.getElementsByName('color');
+            let red = 0, green = 0, blue = 0;
+
+            for (const colorElement of colorElements) {
+                if (colorElement.checked) {
+                    switch (colorElement.value) {
+                        case 'red':
+                            red = intensity;
+                            break;
+                        case 'green':
+                            green = intensity;
+                            break;
+                        case 'blue':
+                            blue = intensity;
+                            break;
+                    }
+                }
+            }
+
+            sendColor(red, green, blue);
+        }
+    </script>
+
+
+
+	<hr>
+		
+	</body>
+<html>

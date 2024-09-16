@@ -15,5 +15,9 @@ Tarea 4: Uart + RGB: UART-RGB
 Tarea 5: Wifi (Access Point + Station) + Tiempo Real: Wifi-Hora
 > Se establece el ESP32 en modo APSTA y mediante el servidor de 'pool.ntp.org' se actualiza la fecha del ESP.
 
+Tarea 6: Wifi + Pagina: pagina_wifi
+> Se emplea un broker para la creación de una pagina, en la cual se emplea un toggle, un control RGB y toma de temperatura.
+
+
 ## Ever Yofre Alarcon
 ## Juan Diego Castaño
