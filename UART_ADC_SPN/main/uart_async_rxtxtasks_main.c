@@ -84,6 +84,25 @@ static float adc_to_temperature(int adc_raw);
 static void example_adc_calibration_deinit(adc_cali_handle_t handle);*/
 
 
+static float adc_to_temperature(int adc_raw) {
+    // Convertir la lectura cruda del ADC a resistencia del NTC
+    float voltage = adc_raw * (ADC_REFERENCE_VOLTAGE / 4095.0); // 4095 es el valor máximo de la lectura cruda del ADC
+    float resistance_ntc = (REFERENCE_RESISTANCE * voltage) / (ADC_REFERENCE_VOLTAGE - voltage);
+
+    // Aplicar la ecuación de Steinhart-Hart para calcular la temperatura en Kelvin
+    float steinhart;
+    steinhart = NTC_RESISTANCE / resistance_ntc; // Invertir (R0/R)
+    steinhart = log(steinhart); // ln(R0/R)
+    steinhart /= BETA; // 1/B * ln(R0/R)
+    steinhart += 1.0 / (AMBIENT_TEMPERATURE + 273.15); // + (1/To)
+    steinhart = 1.0 / steinhart; // Invertir nuevamente para obtener la temperatura
+    steinhart -= 273.15; // Convertir de Kelvin a Celsius
+
+    return steinhart;
+}
+
+
+
 
 
 // Tarea Encargada de la Transmición:
@@ -191,24 +210,6 @@ void app_main(void)
 
 
 
-
-
-static float adc_to_temperature(int adc_raw) {
-    // Convertir la lectura cruda del ADC a resistencia del NTC
-    float voltage = adc_raw * (ADC_REFERENCE_VOLTAGE / 4095.0); // 4095 es el valor máximo de la lectura cruda del ADC
-    float resistance_ntc = (REFERENCE_RESISTANCE * voltage) / (ADC_REFERENCE_VOLTAGE - voltage);
-
-    // Aplicar la ecuación de Steinhart-Hart para calcular la temperatura en Kelvin
-    float steinhart;
-    steinhart = NTC_RESISTANCE / resistance_ntc; // Invertir (R0/R)
-    steinhart = log(steinhart); // ln(R0/R)
-    steinhart /= BETA; // 1/B * ln(R0/R)
-    steinhart += 1.0 / (AMBIENT_TEMPERATURE + 273.15); // + (1/To)
-    steinhart = 1.0 / steinhart; // Invertir nuevamente para obtener la temperatura
-    steinhart -= 273.15; // Convertir de Kelvin a Celsius
-
-    return steinhart;
-}
 
 
 static void init_adc(adc_oneshot_unit_handle_t *adc1_handle, adc_cali_handle_t *adc1_cali_chan0_handle, adc_cali_handle_t *adc1_cali_chan1_handle) {

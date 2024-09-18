@@ -1,4 +1,4 @@
-/* * Data converted from C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/esp-idf/mbedtls/x509_crt_bundle
+/* * Data converted from C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/esp-idf/mbedtls/x509_crt_bundle
  */
 .data
 .section .rodata.embedded

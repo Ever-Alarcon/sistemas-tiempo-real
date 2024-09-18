@@ -141,24 +141,42 @@ function otaRebootTimer()
 		$("#reg_10").text(data["reg10"]);
 	});
 }
+*/
 
 function getDHTSensorValues()
 {
 	$.getJSON('/dhtSensor.json', function(data) {
 		$("#temperature_reading").text(data["temp"]);
 	});
-}*/
+}
 
 
 
 /**
  * Sets the interval for getting the updated DHT22 sensor values.
  */
-
+/*
 function startDHTSensorInterval()
 {
 	setInterval(getDHTSensorValues, 5000);    
+}*/
+
+function startDHTSensorInterval()
+{
+	setInterval(function() {
+        $.getJSON("/dhtSensor.json", function(data) {
+            $("#temperature_reading").text(data.temperature + " °C");
+        });
+    }, 2000); 
 }
+
+
+
+
+
+
+
+
 
 
 /**

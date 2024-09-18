@@ -1,13 +1,13 @@
 # Target labels
  bootloader
 # Source files and their labels
-C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/CMakeFiles/bootloader
-C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/CMakeFiles/bootloader.rule
-C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/CMakeFiles/bootloader-complete.rule
-C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
-C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
-C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
-C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
-C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
-C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
-C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
+C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/CMakeFiles/bootloader
+C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/CMakeFiles/bootloader.rule
+C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/CMakeFiles/bootloader-complete.rule
+C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule

@@ -5,18 +5,18 @@ cmake_minimum_required(VERSION 3.5)
 
 file(MAKE_DIRECTORY
   "C:/Users/juni0/esp/v5.2/esp-idf/components/bootloader/subproject"
-  "C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/bootloader"
-  "C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix"
-  "C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/tmp"
-  "C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp"
-  "C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src"
-  "C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp"
+  "C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/bootloader"
+  "C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix"
+  "C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/tmp"
+  "C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp"
+  "C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src"
+  "C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp"
 )
 
 set(configSubDirs )
 foreach(subDir IN LISTS configSubDirs)
-    file(MAKE_DIRECTORY "C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
+    file(MAKE_DIRECTORY "C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
 endforeach()
 if(cfgdir)
-  file(MAKE_DIRECTORY "C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
+  file(MAKE_DIRECTORY "C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
 endif()

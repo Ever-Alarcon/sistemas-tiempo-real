@@ -6,6 +6,7 @@
 //#include "http_server.h"
 #include "wifi_app.h"
 #include "driver/gpio.h"
+#include "driver/adc.h"
 
 
 #define BLINK_GPIO				2

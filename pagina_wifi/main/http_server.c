@@ -45,6 +45,9 @@
 #include "esp_sntp.h"
 
 #include "rgb_led.h"
+#include "esp_log.h"
+#include "esp_err.h"
+#include <math.h>
 
 // Tag used for ESP serial console messages
 static const char TAG[] = "http_server";
@@ -103,7 +106,7 @@ void toogle_led( void )
 	gpio_set_level(BLINK_GPIO, s_led_state);
 
 }
-
+/*
 static esp_err_t http_server_get_dht_sensor_readings_json_handler(httpd_req_t *req)
 {
 	ESP_LOGI(TAG, "/dhtSensor.json requested");
@@ -116,7 +119,107 @@ static esp_err_t http_server_get_dht_sensor_readings_json_handler(httpd_req_t *r
 	httpd_resp_send(req, dhtSensorJSON, strlen(dhtSensorJSON));
 
 	return ESP_OK;
+}*/
+/*
+#define REFERENCE_RESISTANCE 10000.0
+#define ADC_REFERENCE_VOLTAGE 3300.0
+#define BETA 3950
+#define AMBIENT_TEMPERATURE 25
+
+
+static esp_err_t http_server_get_dht_sensor_readings_json_handler(httpd_req_t *req) {
+    ESP_LOGI(TAG, "/temperatureSensor.json requested");
+
+    int adc_value = 0;  // Variable para almacenar la lectura cruda del ADC
+    float temperature = 0.0;
+
+    // Leer el valor del ADC (usa el ADC y el canal que has configurado)
+    ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, EXAMPLE_ADC1_CHAN0, &adc_value));
+
+    // Convertir la lectura cruda del ADC a resistencia del NTC
+    float voltage = adc_value * (ADC_REFERENCE_VOLTAGE / 4095.0); // 4095 es el valor máximo del ADC
+    float resistance_ntc = (REFERENCE_RESISTANCE * voltage) / (ADC_REFERENCE_VOLTAGE - voltage);
+
+    // Aplicar la ecuación de Steinhart-Hart para calcular la temperatura en grados Celsius
+    float steinhart;
+    steinhart = log(resistance_ntc / REFERENCE_RESISTANCE); // ln(R/R0)
+    steinhart /= BETA; // 1/B * ln(R/R0)
+    steinhart += 1.0 / (AMBIENT_TEMPERATURE + 273.15); // + (1/T0)
+    steinhart = 1.0 / steinhart; // Invertir para obtener T
+    temperature = steinhart - 273.15; // Convertir de Kelvin a Celsius
+
+    // Generar JSON con la temperatura
+    char temperatureJSON[100];
+    sprintf(temperatureJSON, "{\"temperature\":\"%.2f\"}", temperature);
+
+    // Configurar la respuesta como JSON y enviar los datos
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_send(req, temperatureJSON, strlen(temperatureJSON));
+
+    return ESP_OK;
+}*/
+
+#include "driver/adc.h"
+#include "esp_log.h"
+#include "esp_err.h"
+#include <math.h>
+
+#define REFERENCE_RESISTANCE 10000.0
+#define ADC_REFERENCE_VOLTAGE 3300.0
+#define BETA 3950
+#define AMBIENT_TEMPERATURE 25
+
+#define ADC1_CHANNEL ADC1_CHANNEL_6  // Ajusta el canal del ADC que estás utilizando
+
+static esp_err_t http_server_get_dht_sensor_readings_json_handler(httpd_req_t *req) {
+    ESP_LOGI(TAG, "/dhtSensor.json requested");
+
+    int adc_value = 0;  // Variable para almacenar la lectura cruda del ADC
+    float temperature = 0.0;
+
+    // Configurar el ancho de bit del ADC
+    ESP_ERROR_CHECK(adc1_config_width(ADC_WIDTH_BIT_12));
+
+    // Configurar la atenuación del ADC (ajustar si es necesario para tu aplicación)
+    ESP_ERROR_CHECK(adc1_config_channel_atten(ADC1_CHANNEL, ADC_ATTEN_DB_11));
+
+    // Leer el valor del ADC
+    adc_value = adc1_get_raw(ADC1_CHANNEL);
+
+    // Convertir la lectura cruda del ADC a voltaje
+    float voltage = adc_value * (ADC_REFERENCE_VOLTAGE / 4095.0); // 4095 es el valor máximo del ADC de 12 bits
+
+    // Convertir el voltaje a resistencia del NTC
+    float resistance_ntc = (REFERENCE_RESISTANCE * (ADC_REFERENCE_VOLTAGE - voltage)) / voltage;
+
+    // Aplicar la ecuación de Steinhart-Hart para calcular la temperatura en grados Celsius
+    float steinhart;
+    steinhart = log(resistance_ntc / REFERENCE_RESISTANCE); // ln(R/R0)
+    steinhart /= BETA; // 1/B * ln(R/R0)
+    steinhart += 1.0 / (AMBIENT_TEMPERATURE + 273.15); // + (1/T0)
+    steinhart = 1.0 / steinhart; // Invertir para obtener T
+    temperature = steinhart - 273.15; // Convertir de Kelvin a Celsius
+
+    // Generar JSON con la temperatura
+    char dhtSensorJSON[100];
+    sprintf(dhtSensorJSON, "{\"temperature\":\"%.2f\"}", temperature);
+
+    // Configurar la respuesta como JSON y enviar los datos
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_send(req, dhtSensorJSON, strlen(dhtSensorJSON));
+
+    return ESP_OK;
 }
+
+
+
+
+
+
+
+
+
+
 
 
 static esp_err_t http_server_toogle_led_handler(httpd_req_t *req)

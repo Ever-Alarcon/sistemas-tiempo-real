@@ -1,4 +1,4 @@
-/* * Data converted from C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/main/webpage/app.css
+/* * Data converted from C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/main/webpage/app.css
  */
 .data
 .section .rodata.embedded

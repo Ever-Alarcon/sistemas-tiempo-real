@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/juni0/OneDrive/Escritorio/sistemas_tiempo_real/pagina_wifi/main
+# Install script for directory: C:/Users/juni0/OneDrive/Escritorio/git_de_sistemas_tiempo_real/pagina_wifi/main
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
